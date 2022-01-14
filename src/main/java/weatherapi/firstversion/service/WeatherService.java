@@ -75,12 +75,13 @@ public class WeatherService {
                 final JsonReader reader = Json.createReader(is);
                 final JsonObject result = reader.readObject();
                 final String temp = result.getJsonObject("main").getJsonNumber("temp").toString();
+                final String cityName = result.getString("name");
                 final JsonArray readings = result.getJsonArray("weather");
                 return readings.stream()
                     .map(v -> (JsonObject)v)
                     .map(Weather::create)
                     .map(w -> {
-                        w.setCity(city);
+                        w.setCity(cityName);
                         w.setTemp(temp);
                         return w;
                     })                    

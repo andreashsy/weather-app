@@ -10,18 +10,8 @@
     <body>
         <div class="container">
             <div class="row">
-                <div class="column">
-                    <h1>Weather in <span th:text="${cityname}" class="text-danger"></span></h1>
-                    <!--
-                    <table>
-                        <tr data-th-each="w:${weatherList}">
-                            <td data-th-text="${w.temp}"></td>
-                            <td data-th-text="${w.weatherMain}"></td>
-                            <td data-th-text="${w.weatherDescription}"></td>
-
-                        </tr>
-                    </table>
-                    -->
+                <div class="col d-flex justify-content-center mt-5">
+                    <h1>Weather in <span th:text="${city}" class="text-danger"></span></h1>
                 </div>
             </div>
             <div class="row">
@@ -30,7 +20,7 @@
                     <p>Weather is <span th:text="${weather.weatherMain}"></span>, <span th:text="${weather.weatherDescription}"></span> </p>
                     <p>Temperature is <span th:text="${weather.temp}"></span> degrees</p>
 
-                    <form action="/main" method="get">
+                    <form action="/weather/main" method="get">
                         <button type="submit" class="btn btn-primary">Back</button>
                     </form>
                 </div>

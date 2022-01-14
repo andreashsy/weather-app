@@ -17,11 +17,15 @@ public class RedisRepo {
     RedisTemplate<String, String> template;
 
     public void save(String key, String jsonString) {
-        template.opsForValue().set(key, jsonString, 15, TimeUnit.MINUTES);
+        template.opsForValue().set(normalise(key), jsonString, 15, TimeUnit.MINUTES);
     }
 
     public Optional<String> get(String key) {
-        return Optional.ofNullable(template.opsForValue().get(key));
+        return Optional.ofNullable(template.opsForValue().get(normalise(key)));
+    }
+
+    private String normalise(String key) {
+        return key.trim().toLowerCase();
     }
 
 }
