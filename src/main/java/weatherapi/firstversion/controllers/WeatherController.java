@@ -41,9 +41,4 @@ public class WeatherController {
     public String returnToIndex(Model model) {
         return "index";
     }
-
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public String cityFormAPI(@RequestParam(required=true) String city, Model model) {
-        return weatherService.getWeather(city);
-    }
 }
