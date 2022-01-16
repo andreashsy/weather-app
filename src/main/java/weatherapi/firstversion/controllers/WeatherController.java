@@ -25,7 +25,8 @@ public class WeatherController {
 
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String cityForm(@RequestParam(required=true) String city, Model model) {
-        List<Weather> weatherList = weatherService.getWeather(city);
+        String jsonData = weatherService.getWeather(city);
+        List<Weather> weatherList = Weather.jsonToWeatherObj(jsonData);
         for (Weather w:weatherList) {
             logger.log(Level.INFO, "City temp is " + w.getTemp());
             logger.log(Level.INFO, "City weatherDescription is " + w.getWeatherDescription());
@@ -39,5 +40,10 @@ public class WeatherController {
     @GetMapping("/main")
     public String returnToIndex(Model model) {
         return "index";
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public String cityFormAPI(@RequestParam(required=true) String city, Model model) {
+        return weatherService.getWeather(city);
     }
 }

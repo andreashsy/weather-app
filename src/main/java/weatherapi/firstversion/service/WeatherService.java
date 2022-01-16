@@ -1,13 +1,7 @@
 package weatherapi.firstversion.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,14 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-
 import static weatherapi.firstversion.Constants.*;
 
-import weatherapi.firstversion.model.Weather;
 import weatherapi.firstversion.repositories.RedisRepo;
 
 @Service
@@ -32,6 +20,8 @@ public class WeatherService {
     private String appid;
     @Autowired
     RedisRepo redisRepo;
+    @Autowired
+    WeatherCacheService weatherCacheService;
 
     public WeatherService() {
         if ((OPEN_WEATHER_API != null) && (OPEN_WEATHER_API.trim().length() > 0)) {
@@ -41,17 +31,16 @@ public class WeatherService {
         }
     }
 
-    public List<Weather> getWeather(String city) {
+    public String getWeather(String city) {
         String jsonDataString;
-        if (this.hasKey(city)) {
+        if (weatherCacheService.hasKey(city)) {
             //get from cache (redis)
             logger.log(Level.INFO, "City exists in cache, loading from Redis...");
-            Optional<String> opt = redisRepo.get(city);
-            jsonDataString = opt.get();
+            jsonDataString = weatherCacheService.get(city);
         } else {
             // get from Openweather API
             logger.log(Level.INFO, "City does not exist in cache, loading from Openweather API...");
-            String encodedCity = city.replace(" ","+");
+            String encodedCity = city.replace(" ","+");  // api uses '+' instead of whitespace
             
             String url = UriComponentsBuilder
                 .fromUriString(OPENWEATHER_BASE_URL)
@@ -60,7 +49,6 @@ public class WeatherService {
                 .queryParam("units", "metric")
                 .queryParam("lang", "en")
                 .toUriString();
-            logger.log(Level.INFO, "url: " + url);
             RestTemplate template = new RestTemplate();
             ResponseEntity<String> resp = template.getForEntity(url, String.class);
             if (resp.getStatusCode() != HttpStatus.OK) {
@@ -68,33 +56,9 @@ public class WeatherService {
             }
             jsonDataString = resp.getBody();
             //save to Redis cache
-            redisRepo.save(city, jsonDataString);
+            weatherCacheService.cache(city, jsonDataString);
             }
-            // convert json string to weather object
-            try (InputStream is = new ByteArrayInputStream(jsonDataString.getBytes())) {
-                final JsonReader reader = Json.createReader(is);
-                final JsonObject result = reader.readObject();
-                final String temp = result.getJsonObject("main").getJsonNumber("temp").toString();
-                final String cityName = result.getString("name");
-                final JsonArray readings = result.getJsonArray("weather");
-                return readings.stream()
-                    .map(v -> (JsonObject)v)
-                    .map(Weather::create)
-                    .map(w -> {
-                        w.setCity(cityName);
-                        w.setTemp(temp);
-                        return w;
-                    })                    
-                    .collect(Collectors.toList());
-            } catch (Exception e) {
-                logger.log(Level.INFO, e.toString());
-                return new LinkedList<Weather>();
-            }    
-    }
-
-    public boolean hasKey(String key) {
-        Optional<String> opt = redisRepo.get(key);
-        return opt.isPresent();
+            return jsonDataString;   
     }
     
 }

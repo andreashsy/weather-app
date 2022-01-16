@@ -1,8 +1,20 @@
 package weatherapi.firstversion.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 public class Weather {
+    private static final Logger logger = Logger.getLogger(Weather.class.getName());
     private String temp;
     private String iconUrl; 
     private String city;
@@ -63,5 +75,27 @@ public class Weather {
         w.setWeatherMain(o.getString("main"));
         w.setWeatherDescription(o.getString("description"));
         return w;
+    }
+
+    public static List<Weather> jsonToWeatherObj(String jsonDataString) {
+        try (InputStream is = new ByteArrayInputStream(jsonDataString.getBytes())) {
+            final JsonReader reader = Json.createReader(is);
+            final JsonObject result = reader.readObject();
+            final String temp = result.getJsonObject("main").getJsonNumber("temp").toString();
+            final String cityName = result.getString("name");
+            final JsonArray readings = result.getJsonArray("weather");
+            return readings.stream()
+                .map(v -> (JsonObject)v)
+                .map(Weather::create)
+                .map(w -> {
+                    w.setCity(cityName);
+                    w.setTemp(temp);
+                    return w;
+                })                    
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.log(Level.INFO, e.toString());
+            return new LinkedList<Weather>();
+        }
     }
 }
