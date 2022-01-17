@@ -18,7 +18,7 @@ public class RestWeatherController {
     private WeatherServiceImpl weatherService;
 
     @GetMapping("/{city}")
-    public ResponseEntity<String> cityFormAPI(@PathVariable String city, Model model) {
+    public ResponseEntity<String> cityFormAPI(@PathVariable String city) {
         String jsonData = weatherService.getWeather(city);
         return ResponseEntity.ok(jsonData);
     }
