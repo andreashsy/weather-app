@@ -15,15 +15,15 @@ import static weatherapi.firstversion.Constants.*;
 import weatherapi.firstversion.repositories.RedisRepo;
 
 @Service
-public class WeatherService {
-    private final Logger logger = Logger.getLogger(WeatherService.class.getName());
+public class WeatherServiceImpl {
+    private final Logger logger = Logger.getLogger(WeatherServiceImpl.class.getName());
     private String appid;
     @Autowired
     RedisRepo redisRepo;
     @Autowired
     WeatherCacheService weatherCacheService;
 
-    public WeatherService() {
+    public WeatherServiceImpl() {
         if ((OPEN_WEATHER_API != null) && (OPEN_WEATHER_API.trim().length() > 0)) {
             this.appid = OPEN_WEATHER_API;
         } else {

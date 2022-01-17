@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import weatherapi.firstversion.model.Weather;
-import weatherapi.firstversion.service.WeatherService;
+import weatherapi.firstversion.service.WeatherServiceImpl;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,9 +19,9 @@ import java.util.logging.Logger;
 @Controller
 @RequestMapping(path="/weather")
 public class WeatherController {
-    private final Logger logger = Logger.getLogger(WeatherService.class.getName());
+    private final Logger logger = Logger.getLogger(WeatherServiceImpl.class.getName());
     @Autowired
-    private WeatherService weatherService;
+    private WeatherServiceImpl weatherService;
 
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String cityForm(@RequestParam(required=true) String city, Model model) {

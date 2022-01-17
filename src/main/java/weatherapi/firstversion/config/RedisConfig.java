@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,10 +45,19 @@ public class RedisConfig {
             logger.log(Level.INFO, "Redis password not set!");
         }
         
-        final JedisClientConfiguration jedisClient = JedisClientConfiguration.builder().build();
+
+        final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+        poolConfig.setMaxTotal(50);
+        poolConfig.setMaxIdle(30);
+        poolConfig.setMinIdle(10);
+        // jedisFac.getPoolConfig().setMaxIdle(30);
+        // jedisFac.getPoolConfig().setMinIdle(10);
+        final JedisClientConfiguration jedisClient = JedisClientConfiguration
+                                                        .builder()
+                                                        .usePooling().poolConfig(poolConfig)
+                                                        .build();
         final JedisConnectionFactory jedisFac = new JedisConnectionFactory(config, jedisClient);
-        jedisFac.getPoolConfig().setMaxIdle(30);
-        jedisFac.getPoolConfig().setMinIdle(10);
+
         jedisFac.afterPropertiesSet();
         final RedisTemplate<String, String> template = new RedisTemplate<String, String>();
         template.setConnectionFactory(jedisFac);
